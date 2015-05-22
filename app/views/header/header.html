@@ -101,10 +101,13 @@
       </button>
       <ul class="dropdown-menu">
         <li>
+          <a dropdown-toggle ng-click="loadFileFromRepo()" tabindex="-1" track-event="load-from-repo">Load File From&hellip;</a>
+        </li>
+        <li>
           <a dropdown-toggle ng-click="saveFileToRepo()" tabindex="-1" track-event="save-file-to-repo">Save File To&hellip;</a>
         </li>
         <li>
-          <a dropdown-toggle ng-click="loadFileFromRepo()" tabindex="-1" track-event="load-from-repo">Load File From&hellip;</a>
+          <a dropdown-toggle ng-click="commitFileToRepo()" tabindex="-1" track-event="commit-file-to-repo">Commit File To&hellip;</a>
         </li>
       </ul>
     </div>

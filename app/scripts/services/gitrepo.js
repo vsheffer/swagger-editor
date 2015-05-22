@@ -19,8 +19,12 @@ SwaggerEditor.service('GitRepo', function GitRepo($http, defaults) {
 		return $http.put(url, editorValue);
 	}
 
-	this.commitFile = function(repoFileName, commitMessage) {
+	this.commitFileToRepo = function(repoFileName, commitMessage) {
 		var url = defaults.commitRepoUrl + '/' + repoFileName;
-
+		return $http.post(url, "", {
+			headers : {
+				'Commit-Message': commitMessage
+			}
+		});
 	}
 });

@@ -12,7 +12,7 @@
   },
   "enableGitRepo": true,
   "saveRepoUrl": "/specfiles",
-  "commitRepoUrl": "/commit",
+  "commitRepoUrl": "/commitfile",
   "disableCodeGen": false,
   "examplesFolder": "/spec-files/",
   "editorOptions": {

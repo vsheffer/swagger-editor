@@ -100,6 +100,14 @@ SwaggerEditor.controller('HeaderCtrl', function HeaderCtrl($scope, $modal,
     });
   };
 
+  $scope.commitFileToRepo = function () {
+    $modal.open({
+      templateUrl: 'templates/commit-file-to-repo.html',
+      controller: 'CommitFileToRepoCtrl',
+      size: 'large'
+    });
+  };
+
   $scope.openImportFile = function () {
     $modal.open({
       templateUrl: 'templates/file-import.html',
