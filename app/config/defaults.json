@@ -10,6 +10,9 @@
       "id": "UA-51231036-1"
     }
   },
+  "enableGitRepo": true,
+  "saveRepoUrl": "/specfiles",
+  "commitRepoUrl": "/commit",
   "disableCodeGen": false,
   "examplesFolder": "/spec-files/",
   "editorOptions": {

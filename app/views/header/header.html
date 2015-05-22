@@ -93,6 +93,22 @@
       </ul>
     </div>
 
+    <div class="git-repo dropdown" ng-if="clients && !enableGitRepo">
+       <button class="btn btn-default dropdown-toggle" type="button"
+        data-toggle="dropdown" id="ClientMenu">
+        Manage Git Repository
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu">
+        <li>
+          <a dropdown-toggle ng-click="saveFileToRepo()" tabindex="-1" track-event="save-file-to-repo">Save File To&hellip;</a>
+        </li>
+        <li>
+          <a dropdown-toggle ng-click="loadFileFromRepo()" tabindex="-1" track-event="load-from-repo">Load File From&hellip;</a>
+        </li>
+      </ul>
+    </div>
+
     <div class="help dropdown">
       <button class="dropdown-icon btn btn-default dropdown-toggle" id="helpMenu" data-toggle="dropdown" type="button">Help
       <span class="caret"></span>

@@ -17,6 +17,7 @@ SwaggerEditor.config(function ($provide) {
       'success-process': 'Processed with no error',
       'progress-saving': 'Saving...',
       'success-saved': 'All changes saved',
+      'success-file-saved-to-repo': 'Changes saved to repo',
       'error-yaml': 'YAML Syntax Error',
       'error-swagger': 'Swagger Error'
     }

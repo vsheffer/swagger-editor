@@ -1,0 +1,19 @@
+###
+# swagger-editor - https://github.com/swagger-api/swagger-editor/
+#
+# Run the swagger-editor service on port 8080
+###
+
+FROM    vsheffer/gitrest
+MAINTAINER Marcello_deSales@intuit.com
+
+ENV     DEBIAN_FRONTEND noninteractive
+
+RUN     apt-get update && apt-get install -y git npm nodejs curl
+RUN     ln -s /usr/bin/nodejs /usr/local/bin/node
+
+WORKDIR /runtime
+ADD     package.json    /runtime/package.json
+RUN     npm install
+RUN     npm install -g bower grunt-cli
+

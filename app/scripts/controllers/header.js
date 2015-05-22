@@ -83,6 +83,23 @@ SwaggerEditor.controller('HeaderCtrl', function HeaderCtrl($scope, $modal,
     assignDownloadHrefs($scope, Storage);
   };
 
+  $rootScope.repoFileName = $localStorage.repoFileName;
+  $scope.loadFileFromRepo = function () {
+    $modal.open({
+      templateUrl: 'templates/load-repo-file.html',
+      controller: 'LoadFromRepoCtrl',
+      size: 'large'
+    });
+  };
+
+  $scope.saveFileToRepo = function () {
+    $modal.open({
+      templateUrl: 'templates/save-file-to-repo.html',
+      controller: 'SaveFileToRepoCtrl',
+      size: 'large'
+    });
+  };
+
   $scope.openImportFile = function () {
     $modal.open({
       templateUrl: 'templates/file-import.html',
