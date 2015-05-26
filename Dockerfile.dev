@@ -4,7 +4,7 @@
 # Run the swagger-editor service on port 8080
 ###
 
-FROM    bhnetwork/grunt
+FROM    vsheffer/grunt
 MAINTAINER Marcello_deSales@intuit.com
 
 ADD     bower.json      /runtime/bower.json
