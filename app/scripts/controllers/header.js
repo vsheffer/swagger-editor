@@ -84,6 +84,8 @@ SwaggerEditor.controller('HeaderCtrl', function HeaderCtrl($scope, $modal,
   };
 
   $rootScope.repoFileName = $localStorage.repoFileName;
+  $rootScope.committer = $localStorage.committer;
+
   $scope.loadFileFromRepo = function () {
     $modal.open({
       templateUrl: 'templates/load-repo-file.html',

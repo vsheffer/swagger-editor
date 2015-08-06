@@ -5,18 +5,21 @@ SwaggerEditor.controller('CommitFileToRepoCtrl', function CommitFileToRepoCtrl($
   var results;
 
   $scope.repoFileName = $rootScope.repoFileName;
+  $scope.committer = $rootScope.committer;
   $scope.commitMessage = '';
 
-  $scope.commit = function (commitmsg) {
-    GitRepo.commitFileToRepo($scope.repoFileName, commitmsg).then(function(response) {
+  $scope.commit = function (commitmsg, committer) {
+    $localStorage.committer = committer;
+    $rootScope.committer = committer;
+    GitRepo.commitFileToRepo($scope.repoFileName, commitmsg, committer).then(function(response) {
       $modalInstance.close();
       Storage.save('progress', 'success-file-commit-to-repo');
     }, $modalInstance.close());
     Analytics.sendEvent('save-commit-to-repo', 'save-commit-to-repo:' + repoFileName);
   };
 
-  $scope.isCommitMessageEntered = function() {
-  	return $scope.commitMessage.length > 0;
+  $scope.isCommitDataEntered = function() {
+  	return $scope.commitMessage.length > 0 && $scope.committer.length > 0;
   }
 
   $scope.cancel = $modalInstance.close;

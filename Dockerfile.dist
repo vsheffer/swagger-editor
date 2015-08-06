@@ -16,4 +16,7 @@ RUN 	grunt build
 
 # The default port of the application
 EXPOSE  8080
-CMD [ "/usr/bin/gitrest", "-repo-dir=/var/local/data/swagger-specs", "-static-dir=/runtime/dist/" ]
+
+ENTRYPOINT [ "/usr/bin/gitrest" ]
+
+CMD [ "-repo-dir=/var/local/data/swagger-specs", "-static-dir=/runtime/dist/", "-password-file", "/var/local/data/swagger-specs/htpasswd" ]

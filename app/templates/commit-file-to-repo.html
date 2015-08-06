@@ -6,8 +6,10 @@
   <p>Commiting file <em>{{repoFileName}}</em></p>
   <p>Enter a commit message:</p>
   <input ng-model="commitMessage"/>
+  <p>Enter your email address:</p>
+  <input ng-model="committer"/>
 </div>
 <div class="modal-footer">
   <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
-  <button class="btn btn-primary" ng-click="commit(commitMessage)" ng-disabled="isCommitMessageEntered()">Commit</button>
+  <button class="btn btn-primary" ng-click="commit(commitMessage, committer)" ng-disabled="isCommitDataEntered()">Commit</button>
 </div>
