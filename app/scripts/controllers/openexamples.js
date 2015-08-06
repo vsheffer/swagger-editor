@@ -1,7 +1,7 @@
 'use strict';
 
 SwaggerEditor.controller('OpenExamplesCtrl', function OpenExamplesCtrl($scope,
-  $modalInstance, $rootScope, FileLoader, Builder, Storage, ASTManager,
+  $modalInstance, $rootScope, $state, FileLoader, Builder, Storage, ASTManager,
   Analytics, defaults) {
 
   $scope.files = defaults.exampleFiles;
@@ -15,12 +15,13 @@ SwaggerEditor.controller('OpenExamplesCtrl', function OpenExamplesCtrl($scope,
       location.pathname.substring(1) :
       location.pathname;
 
-    var url = pathname + defaults.examplesFolder + file;
+    var url = '/' + pathname + defaults.examplesFolder + file;
 
     FileLoader.loadFromUrl(url).then(function (value) {
       Storage.save('yaml', value);
       ASTManager.refresh(value);
       $rootScope.editorValue = value;
+      $state.go('home', {tags: null});
       $modalInstance.close();
     }, $modalInstance.close);
 

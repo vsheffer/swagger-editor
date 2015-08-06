@@ -5,7 +5,7 @@
  * relevant completion candidates based on Swagger document.
 */
 SwaggerEditor.service('Autocomplete', function ($rootScope, snippets,
-  ASTManager, KeywordMap) {
+  ASTManager, KeywordMap, Preferences) {
   var editor = null;
 
   // Ace KeywordCompleter object
@@ -13,6 +13,11 @@ SwaggerEditor.service('Autocomplete', function ($rootScope, snippets,
 
     // this method is being called by Ace to get a list of completion candidates
     getCompletions: function (editor, session, pos, prefix, callback) {
+
+      // Do not make any suggestions when autoComplete preference is off
+      if (!Preferences.get('autoComplete')) {
+        return callback(null, []);
+      }
 
       // Let Ace select the first candidate
       editor.completer.autoSelect = true;
@@ -60,8 +65,14 @@ SwaggerEditor.service('Autocomplete', function ($rootScope, snippets,
    *   in the YAML document
   */
   function getPathForPosition(pos) {
-    // pos.column is 1 more because the character is already inserted
-    var path = ASTManager.pathForPosition(pos.row, pos.column - 1);
+
+    // we are subtracting 2 from row.column because:
+    //  1. the position object is 1 base index, but ASTManager works with 0 base
+    //     indexes
+    //  2. the already inserted character should not be counted for getting the
+    //     position. We want the path up to node that we're editing, not the the
+    //     node we're adding (if any)
+    var path = ASTManager.pathForPosition(pos.row, pos.column - 2);
 
     return path;
   }

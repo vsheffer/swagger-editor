@@ -16,7 +16,6 @@ module.exports = {
         'views/{,*/}*.html',
         'templates/{,*/}*.html',
         'fonts/*',
-        'schema/*',
         'spec-files/*',
         'CNAME',
         'styles/branding.css',
@@ -46,6 +45,13 @@ module.exports = {
     expand: true,
     cwd: 'app/bower_components/ace-builds/src-min-noconflict/',
     dest: 'dist/bower_components/ace-builds/src-noconflict/',
-    src: '**/*.js',
+    src: [
+      'theme-*.js',
+      'snippets/yaml.js',
+      'ext-settings_menu.js',
+      'ext-language_tools.js',
+      'ext-searchbox.js',
+      'mode-yaml.js'
+    ],
   }
 };

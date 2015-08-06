@@ -76,12 +76,11 @@ SwaggerEditor.controller('HeaderCtrl', function HeaderCtrl($scope, $modal,
       $rootScope.editorValue = value;
       ASTManager.refresh($rootScope.editorValue);
       Storage.save('yaml', value);
+      $state.go('home', {tags: null});
     });
   };
 
-  $scope.assignDownloadHrefs = function () {
-    assignDownloadHrefs($scope, Storage);
-  };
+  $scope.assignDownloadHrefs = assignDownloadHrefs;
 
   $rootScope.repoFileName = $localStorage.repoFileName;
   $rootScope.committer = $localStorage.committer;
@@ -159,8 +158,12 @@ SwaggerEditor.controller('HeaderCtrl', function HeaderCtrl($scope, $modal,
     });
   };
 
-  $scope.toggleLiveRender = function () {
-    Preferences.set('liveRender', !Preferences.get('liveRender'));
+  $scope.openPreferences = function () {
+    $modal.open({
+      templateUrl: 'templates/preferences.html',
+      controller: 'PreferencesCtrl',
+      size: 'large'
+    });
   };
 
   $scope.isLiveRenderEnabled = function () {

@@ -4,13 +4,14 @@
  * Manages the AST representation of the specs for fold status
  * and other meta information about the specs tree
 */
-SwaggerEditor.service('ASTManager', function ASTManager() {
+SwaggerEditor.service('ASTManager', function ASTManager($log) {
   var MAP_TAG = 'tag:yaml.org,2002:map';
   var SEQ_TAG = 'tag:yaml.org,2002:seq';
   var INDENT = 2; // TODO: make indent dynamic based on document
   var ast = {};
   var changeListeners = [];
   var yamlBuffer = '';
+  var compose = _.memoize(yaml.compose);
 
   /*
   ** Update ast with changes from editor
@@ -21,10 +22,10 @@ SwaggerEditor.service('ASTManager', function ASTManager() {
 
     try {
       yamlBuffer = value;
-      ast = yaml.compose(value);
+      ast = compose(value);
       emitChanges();
     } catch (err) {
-      console.warn('Failed to refresh line numbers', err);
+      $log.warn('Failed to refresh line numbers', err);
     }
   }
 
@@ -189,10 +190,14 @@ SwaggerEditor.service('ASTManager', function ASTManager() {
       // and end columns we found the node
       if (start.line === line && end.line === line &&
         start.column <= row  && end.column >= row) {
+
         result = path;
+
+        return result;
 
       // if this node is a map, loop through and recurse both keys and value
       } else if (current.tag === MAP_TAG) {
+
         current.value.forEach(function (keyValuePair) {
           recurse(path, keyValuePair[0]); // key
           recurse(path.concat(keyValuePair[0].value), keyValuePair[1]); // value
@@ -200,6 +205,7 @@ SwaggerEditor.service('ASTManager', function ASTManager() {
 
       // if this node is a sequence, loop through values and recurse
       } else if (current.tag === SEQ_TAG) {
+
         current.value.forEach(function (value, index) {
           recurse(path.concat(index), value);
         });
