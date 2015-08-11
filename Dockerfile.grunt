@@ -4,7 +4,7 @@
 # Run the swagger-editor service on port 8080
 ###
 
-FROM    vsheffer/gitrest
+FROM    vsheffer/gitrest:f93019
 MAINTAINER Marcello_deSales@intuit.com
 
 ENV     DEBIAN_FRONTEND noninteractive
@@ -15,5 +15,5 @@ RUN     ln -s /usr/bin/nodejs /usr/local/bin/node
 WORKDIR /runtime
 ADD     package.json    /runtime/package.json
 RUN     npm install
-RUN     npm install -g bower grunt-cli
+RUN     npm install -g bower grunt-cli grunt-wiredep
 
