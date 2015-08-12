@@ -27,9 +27,8 @@ $(function () {
     var isProduction = !/localhost/.test(window.location.host);
 
     window.SwaggerEditor.$defaults = defaults;
-
     angular.bootstrap(window.document, ['SwaggerEditor'], {
-      strictDi: isProduction
+      strictDi: false
     });
   }
 });

@@ -19,7 +19,10 @@ SwaggerEditor.controller('CommitFileToRepoCtrl', function CommitFileToRepoCtrl($
   };
 
   $scope.isCommitDataEntered = function() {
-  	return $scope.commitMessage.length > 0 && $scope.committer.length > 0;
+    var commitMessageLength = $scope.commitMessage.length;
+    var committerLength = $scope.committer.length;
+    var retvalue = commitMessageLength > 0 && committerLength > 0; 
+    return !retvalue;
   }
 
   $scope.cancel = $modalInstance.close;
