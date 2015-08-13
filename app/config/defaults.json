@@ -13,7 +13,7 @@
   "enableGitRepo": true,
   "saveRepoUrl": "/specfiles",
   "commitRepoUrl": "/commitfile",
-  "disableCodeGen": false,
+  "disableCodeGen": true,
   "examplesFolder": "spec-files/",
   "editorOptions": {
     "theme": "ace/theme/atom_dark"
