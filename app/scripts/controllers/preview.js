@@ -1,12 +1,27 @@
 'use strict';
 
 SwaggerEditor.controller('PreviewCtrl', function PreviewCtrl(Storage, Builder,
-  ASTManager, Editor, BackendHealthCheck, FocusedPath, TagManager, Preferences,
+  ASTManager, Editor, FocusedPath, TagManager, Preferences, FoldStateManager,
   $scope, $rootScope, $stateParams, $sessionStorage) {
 
-  $sessionStorage.$default({securityKeys: {}});
-  var securityKeys = $sessionStorage.securityKeys;
-  var SparkMD5 = (window.SparkMD5);
+  var build = _.memoize(Builder.buildDocs);
+
+  $scope.loadLatest = loadLatest;
+  $scope.tagIndexFor = TagManager.tagIndexFor;
+  $scope.getAllTags = TagManager.getAllTags;
+  $scope.getCurrentTags = TagManager.getCurrentTags;
+  $scope.stateParams = $stateParams;
+  $scope.isVendorExtension = isVendorExtension;
+  $scope.showOperation = showOperation;
+  $scope.showDefinitions = showDefinitions;
+  $scope.responseCodeClassFor = responseCodeClassFor;
+  $scope.focusEdit = focusEdit;
+  $scope.showPath = showPath;
+  $scope.foldEditor = FoldStateManager.foldEditor;
+  $scope.listAllOperation = listAllOperation;
+  $scope.listAllDefnitions = listAllDefnitions;
+
+  Storage.addChangeListener('yaml', update);
 
   /**
    * Reacts to updates of YAML in storage that usually triggered by editor
@@ -15,42 +30,37 @@ SwaggerEditor.controller('PreviewCtrl', function PreviewCtrl(Storage, Builder,
   function update(latest, force) {
     if (!Preferences.get('liveRender') && !force && $scope.specs) {
       $rootScope.isDirty = true;
-      Storage.save('progress',  'progress-unsaved');
-      return;
-    }
-
-    ASTManager.refresh(latest);
-
-    // If backend is not healthy don't update
-    if (!BackendHealthCheck.isHealthy()) {
+      $rootScope.progressStatus = 'progress-unsaved';
       return;
     }
 
     // Error can come in success callback, because of recursive promises
     // So we install same handler for error and success
-    Builder.buildDocs(latest).then(onBuildSuccess, onBuildFailure);
+    build(latest).then(onBuildSuccess, onBuildFailure);
   }
 
   /**
    * General callback for builder results
   */
   function onBuild(result) {
-    var sortOptions = {};
-    if (angular.isString($stateParams.tags)) {
-      sortOptions.limitToTags = $stateParams.tags.split(',');
-    }
 
-    refreshTags(result.specs);
+    $scope.$broadcast('toggleWatchers', true);  // turn watchers back on
 
-    $scope.specs = result.specs;
-
-    if ($scope.specs && $scope.specs.securityDefinitions) {
-      _.forEach($scope.specs.securityDefinitions, function (security, key) {
-        securityKeys[key] = SparkMD5.hash(JSON.stringify(security));
+    if (result.specs && result.specs.securityDefinitions) {
+      var securityKeys = {};
+      _.forEach(result.specs.securityDefinitions, function (security, key) {
+        securityKeys[key] =
+          SparkMD5.hash(JSON.stringify(security));
       });
+      $sessionStorage.securityKeys = securityKeys;
     }
-    $scope.errors = result.errors;
-    $scope.warnings = result.warnings;
+
+    if (result.specs) {
+      TagManager.registerTagsFromSpec(result.specs);
+      $rootScope.specs = result.specs;
+    }
+    $rootScope.errors = result.errors || [];
+    $rootScope.warnings = result.warnings || [];
   }
 
   /**
@@ -58,16 +68,13 @@ SwaggerEditor.controller('PreviewCtrl', function PreviewCtrl(Storage, Builder,
   */
   function onBuildSuccess(result) {
     onBuild(result);
-    $scope.errors = null;
-    Storage.save('progress',  'success-process');
+    $rootScope.progressStatus = 'success-process';
 
     Editor.clearAnnotation();
 
-    if (angular.isArray(result.warnings)) {
-      result.warnings.forEach(function (warning) {
-        Editor.annotateSwaggerError(warning, 'warning');
-      });
-    }
+    _.each(result.warnings, function (warning) {
+      Editor.annotateSwaggerError(warning, 'warning');
+    });
   }
 
   /**
@@ -79,93 +86,42 @@ SwaggerEditor.controller('PreviewCtrl', function PreviewCtrl(Storage, Builder,
     if (angular.isArray(result.errors)) {
       if (result.errors[0].yamlError) {
         Editor.annotateYAMLErrors(result.errors[0].yamlError);
-        Storage.save('progress', 'error-yaml');
+        $rootScope.progressStatus = 'error-yaml';
       } else if (result.errors.length) {
-        Storage.save('progress', 'error-swagger');
+        $rootScope.progressStatus = 'error-swagger';
         result.errors.forEach(Editor.annotateSwaggerError);
       } else {
-        Storage.save('progress', 'error-general');
+        $rootScope.progressStatus = 'progress';
       }
     } else {
-      Storage.save('progress', 'error-general');
+      $rootScope.progressStatus = 'error-general';
     }
   }
 
-  Storage.addChangeListener('yaml', update);
-
-  $scope.loadLatest = function () {
-    Storage.load('yaml').then(function (latest) {
-      update(latest, true);
-    });
+  /**
+   * Loads the latest spec from editor value
+  */
+  function loadLatest() {
+    update($rootScope.editorValue, true);
     $rootScope.isDirty = false;
-  };
-
-  // If app is in preview mode, load the yaml from storage
-  if ($rootScope.mode === 'preview') {
-    $scope.loadLatest();
-  }
-
-  ASTManager.onFoldStatusChanged(function () {
-    _.defer(function () { $scope.$apply(); });
-  });
-  $scope.isCollapsed = ASTManager.isFolded;
-  $scope.isAllFolded = ASTManager.isAllFolded;
-  $scope.toggle = function (path) {
-    ASTManager.toggleFold(path, Editor);
-  };
-  $scope.toggleAll = function (path) {
-    ASTManager.setFoldAll(path, true, Editor);
-  };
-
-  $scope.tagIndexFor = TagManager.tagIndexFor;
-  $scope.getAllTags = TagManager.getAllTags;
-  $scope.getCurrentTags = TagManager.getCurrentTags;
-  $scope.stateParams = $stateParams;
-
-  function refreshTags(specs) {
-    if (angular.isObject(specs)) {
-      TagManager.registerTagsFromSpecs(specs);
-    }
   }
 
   /**
    * Focuses editor to a line that represents that path beginning
    * @param {AngularEvent} $event - angular event
    * @param {array} path - an array of keys into specs structure
-   * @param {int} offset - Because of some bugs in AST generated by
-   *   yaml-js, sometime generated line number is not accurate. this
-   *   is used to adjust that. FIXME: it should get removed once bugs
-   *   in yaml-js is fixed.
-   * that points out that specific node
   */
-  $scope.focusEdit = function ($event, path, offset) {
+  function focusEdit($event, path) {
 
     $event.stopPropagation();
 
-    var line = ASTManager.lineForPath(path);
+    ASTManager.positionRangeForPath($rootScope.editorValue, path)
+    .then(function (range) {
+      Editor.gotoLine(range.start.line);
+      Editor.focus();
+    });
 
-    offset = offset || 0;
-    Editor.gotoLine(line - offset);
-    Editor.focus();
-  };
-
-  /**
-   * Returns true if operation is the operation in focus
-   * in the editor
-   * @returns {boolean}
-  */
-  $scope.isInFocus = function (path) {
-    return !!path; //FocusedPath.isInFocus(path);
-  };
-
-  /**
-   * get a subpath for edit
-   * @param  {string} pathName
-   * @return {string} edit path
-   */
-  $scope.getEditPath = function (pathName) {
-    return '#/paths?path=' + window.encodeURIComponent(pathName);
-  };
+  }
 
   /**
    * Response CSS class for an HTTP response code
@@ -174,23 +130,15 @@ SwaggerEditor.controller('PreviewCtrl', function PreviewCtrl(Storage, Builder,
    *
    * @returns {string} - CSS class to be applied to the response code HTML tag
   */
-  $scope.responseCodeClassFor = function (code) {
-    var result = 'default';
-    switch (Math.floor(+code / 100)) {
-      case 2:
-        result = 'green';
-        break;
-      case 5:
-        result = 'red';
-        break;
-      case 4:
-        result = 'yellow';
-        break;
-      case 3:
-        result = 'blue';
-    }
-    return result;
-  };
+  function responseCodeClassFor(code) {
+    var colors = {
+      2: 'green',
+      3: 'blue',
+      4: 'yellow',
+      5: 'red'
+    };
+    return colors[Math.floor(+code / 100)] || 'default';
+  }
 
   /**
    * Determines if a key is a vendor extension key
@@ -204,8 +152,6 @@ SwaggerEditor.controller('PreviewCtrl', function PreviewCtrl(Storage, Builder,
     return _.startsWith(key, 'x-');
   }
 
-  $scope.isVendorExtension = isVendorExtension;
-
   /**
    * Determines if we should render the definitions sections
    *
@@ -214,9 +160,9 @@ SwaggerEditor.controller('PreviewCtrl', function PreviewCtrl(Storage, Builder,
    * @return {boolean} - true if definitions object should be rendered, false
    *  otherwise
   */
-  $scope.showDefinitions = function (definitions) {
+  function showDefinitions(definitions) {
     return angular.isObject(definitions);
-  };
+  }
 
   /**
    * Determines if an operation should be shown or not
@@ -244,20 +190,49 @@ SwaggerEditor.controller('PreviewCtrl', function PreviewCtrl(Storage, Builder,
       _.intersection(TagManager.getCurrentTags(), operation.tags).length;
   }
 
-  $scope.showOperation = showOperation;
-
   /**
    * Determines if apath should be shown or not
    * @param  {object} path     the path object
    * @param  {string} pathName the path name in paths hash
    * @return {boolean}         true if the path should be shown
    */
-  $scope.showPath = function (path, pathName) {
+  function showPath(path, pathName) {
     if (isVendorExtension(pathName)) {
       return false;
     }
 
     return _.some(path, showOperation);
+  }
 
-  };
+  /**
+   * Folds all operation regardless of their current fold status
+   *
+  */
+  function listAllOperation() {
+    _.each($scope.specs.paths, function (path, pathName) {
+      if (_.isObject(path)) {
+        _.each(path, function (operation, operationName) {
+          if (_.isObject(operation)) {
+            operation.$folded = true;
+            FoldStateManager
+              .foldEditor(['paths', pathName, operationName], true);
+          }
+        });
+      }
+    });
+  }
+
+  /**
+   * Folds all definitions regardless of their current fold status
+   *
+  */
+  function listAllDefnitions() {
+    _.each($scope.specs.definitions, function (definition, definitionName) {
+
+      if (_.isObject(definition)) {
+        definition.$folded = true;
+        FoldStateManager.foldEditor(['definitions', definitionName], true);
+      }
+    });
+  }
 });

@@ -6,7 +6,11 @@
 
   <section class="menu-bar">
     <div class="file dropdown" ng-if="showFileMenu()">
-      <button class="btn btn-default dropdown-toggle" ng-click="assignDownloadHrefs()" data-toggle="dropdown" id="fileMenu">
+      <button
+        class="btn btn-default dropdown-toggle"
+        ng-click="onFileMenuOpen()"
+        data-toggle="dropdown"
+        id="fileMenu">
         <span>File</span>
         <span class="caret"></span>
       </button>
@@ -147,6 +151,9 @@
 
   <section class="status-bar">
     <div class="status {{statusClass}}" ng-if="status">
+      <i ng-if="statusClass == 'working'" class="fa fa-spinner fa-pulse"></i>
+      <i ng-if="statusClass == 'error'" class="fa fa fa-times"></i>
+      <i ng-if="statusClass == 'success'" class="fa fa-check"></i>
       <span>{{status}}</span>
     </div>
     <div class="brandRight" ng-include="'templates/branding-right.html'" ng-if="showHeaderBranding()"></div>

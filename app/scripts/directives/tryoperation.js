@@ -19,7 +19,7 @@ SwaggerEditor.controller('TryOperation', function ($scope, formdataFilter,
   $scope.requestSchema = makeRequestSchema();
   $scope.hasFileParam = hasFileParam();
   // httpProtocol is static for now we can use HTTP2 later if we wanted
-  $scope.httpProtorcol = 'HTTP/1.1';
+  $scope.httpProtocol = 'HTTP/1.1';
   $scope.locationHost = window.location.host;
 
   configureSchemaForm();
@@ -116,6 +116,7 @@ SwaggerEditor.controller('TryOperation', function ($scope, formdataFilter,
     var schema = {
       type: 'object',
       title: 'Request',
+      required: ['scheme', 'accept'],
       properties: {
         scheme: {
           type: 'string',
@@ -197,7 +198,7 @@ SwaggerEditor.controller('TryOperation', function ($scope, formdataFilter,
     var model = {
 
       // Add first scheme as default scheme
-      scheme: [walkToProperty('schemes')[0]],
+      scheme: walkToProperty('schemes')[0],
 
       // Default Accept header is the first one
       accept: walkToProperty('produces')[0]
@@ -335,18 +336,17 @@ SwaggerEditor.controller('TryOperation', function ($scope, formdataFilter,
     var securityOptions = [];
 
     // operation level securities
-    if (Array.isArray($scope.operation.security)) {
+    if (_.isArray($scope.operation.security)) {
       $scope.operation.security.map(function (security) {
-        Object.keys(security).forEach(function (key) {
+        _.keys(security).forEach(function (key) {
           securityOptions = securityOptions.concat(key);
         });
       });
-    }
 
     // root level securities
-    if (Array.isArray($scope.specs.security)) {
+    } else if (_.isArray($scope.specs.security)) {
       $scope.specs.security.map(function (security) {
-        Object.keys(security).forEach(function (key) {
+        _.keys(security).forEach(function (key) {
           securityOptions = securityOptions.concat(key);
         });
       });

@@ -4,7 +4,7 @@ Configuration
 =============
 
 Swagger editor is configured from the file [`app/config/defaults.js`](../app/config/defaults.json).
-To learn more about this file please review [`defaults.json.guide.js`](../app/config/default.json.guide.js).
+To learn more about this file, please review [`defaults.json.guide.js`](../app/config/defaults.json.guide.js).
 
 Custom UI
 ---------
@@ -62,12 +62,6 @@ and `PUT` for saving it.
 
 #### `useBackendForStorage`
 Set to ``true`` to enable a backend.
-
-#### `backendHealthCheckTimeout`
-Timeout in millseconds of the http request to healthchecks the backend. Set it to `-1` to disable backend health check completely.
-
-##### note:
-This healthcheck is actually hitting location.href, not the url specified by backendEndpoint
 
 #### `backendThrottle`
 The timeout for throttling backend calls. The default is 200 milliseconds
